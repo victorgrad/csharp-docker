@@ -1,8 +1,7 @@
-name: Deploy to Amazon ECR
+name: Build the .NET application and deploy to Amazon ECR
 
 on:
-  push:
-    branches: [ "master" ]
+  workflow_dispatch:
 
 env:
   AWS_REGION: ap-northeast-1
@@ -34,9 +33,6 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore
 
-    - name: Build
-      run: dotnet build --configuration Release --no-restore
-
     - name: Test
       run: dotnet test --no-restore --verbosity normal
 
@@ -67,8 +63,10 @@ jobs:
   deploy:
     name: Deploy
     runs-on: ubuntu-latest
-    environment: dev
     needs: build
+
+    environment: 
+      name: ${{ inputs.environment }}
 
     steps:
     - name: Checkout

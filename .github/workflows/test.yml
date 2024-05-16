@@ -1,0 +1,38 @@
+name: Test Dotnet App
+
+on:
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  test:
+    name: Test and static analysis
+    runs-on: ubuntu-latest
+    # Assuming we use Coverlet
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+  
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '8.0.203'
+  
+      - name: Restore dependencies
+        run: dotnet restore
+  
+      - name: Test
+        run: dotnet test --no-restore --verbosity normal /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
+
+      - name: Configure SonarCloud Scanner
+        uses: SonarSource/sonarcloud-github-action@v1.8.0  # Adjust version as needed
+        with:
+          projectKey: ${{ secrets.SONAR_PROJECT_KEY }}
+          organization: ${{ secrets.SONAR_PROJECT_ORGANIZATION }}
+          token: ${{ secrets.SONAR_TOKEN }}
+
+      - name: Analyze Code with SonarCloud
+        run: sonar-scanner -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }} \
+                           -Dsonar.organization=${{ secrets.SONAR_PROJECT_ORGANIZATION }} \
+                           -Dsonar.host.url=https://sonarcloud.io
+                           -Dsonar.coverage.reportPaths=coverage/coverage.opencover.xml
