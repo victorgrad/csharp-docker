@@ -78,7 +78,7 @@ jobs:
     - name: Approval Step
       uses: trstringer/manual-approval@v1
       with:
-        secret: ${{ github.TOKEN }}
+        secret: ${{ secrets.GITHUB_TOKEN }}
         approvers: victorgradinariu
 
     - name: Configure AWS credentials
