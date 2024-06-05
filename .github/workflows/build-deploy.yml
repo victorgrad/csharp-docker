@@ -2,9 +2,9 @@ name: Build the .NET application and deploy to Amazon ECR
 
 on:
   workflow_dispatch:
-    inputs:
-      environment:
-          type: environment
+    # inputs:
+    #   environment:
+    #       type: environment
 
 
 env:
@@ -69,11 +69,17 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
 
-    environment: ${{ github.event.inputs.environment }}
+    # environment: ${{ github.event.inputs.environment }}
 
     steps:
     - name: Checkout
       uses: actions/checkout@v3
+
+    - name: Approval Step
+      uses: trstringer/manual-approval@v1
+      with:
+        secret: ${{ github.TOKEN }}
+        approvers: victorgradinariu
 
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v1
