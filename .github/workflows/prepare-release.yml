@@ -51,7 +51,7 @@ jobs:
         git config --global user.name 'github-actions'
         git config --global user.email 'github-actions@noreply.github.com'
         git commit -am "Increment patch version"
-        git push
+        git push origin RELEASE_${{ steps.extract-version.outputs.version }}
         git checkout master
 
     - name: Increment minor version
