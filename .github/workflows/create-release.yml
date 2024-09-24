@@ -55,6 +55,7 @@ jobs:
   
     - name: Checkout tag
       run: |
+        git fetch
         git checkout tags/v${{ steps.extract-version.outputs.version }}
 
     - name: Build, tag, and push image to Amazon ECR
