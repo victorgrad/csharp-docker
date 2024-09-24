@@ -12,12 +12,6 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
 
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v4
-      with:
-        role-to-assume: ${{ secrets.AWS_GITHUB_ROLE }}
-        aws-region: ap-northeast-1
-
     - name: Extract version from .csproj
       id: extract-version
       run: |
