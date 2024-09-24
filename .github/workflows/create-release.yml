@@ -1,12 +1,12 @@
-name: Prepare release
+name: Create release on release branch
 
 on:
   workflow_dispatch:
 
 jobs:
-  prepare-release:
-    name: Prepare release
-    if: github.ref_name == github.event.repository.default_branch
+  create-release:
+    name: Create release
+    if: startsWith(github.ref, 'refs/heads/RELEASE_')
     runs-on: ubuntu-latest
 
     steps:
@@ -27,11 +27,7 @@ jobs:
       with:
         tag_name: v${{ steps.extract-version.outputs.version }}
         release_name: Release ${{ steps.extract-version.outputs.version }}
-
-    - name: Create release branch
-      run: |
-        git checkout -b RELEASE_${{ steps.extract-version.outputs.version }}
-
+  
     - name: Increment patch version
       id: increment-patch-version
       run: |
@@ -45,32 +41,14 @@ jobs:
         new_version="$major.$minor.$patch"
         
         sed -i "s/<Version>.*<\/Version>/<Version>$new_version<\/Version>/" BMW.Portal.Api/BMW.Portal.Api.csproj
-        
+
+    - name: Extract branch name
+      run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
+      id: extract_branch     
+
     - name: Push incremented patch version
       run: |
         git config --global user.name 'github-actions'
         git config --global user.email 'github-actions@noreply.github.com'
         git commit -am "Increment patch version"
-        git push origin RELEASE_${{ steps.extract-version.outputs.version }}
-        git checkout master
-
-    - name: Increment minor version
-      id: increment-version
-      run: |
-        version=${{ steps.extract-version.outputs.version }}
-        major=$(echo $version | cut -d '.' -f 1)
-        minor=$(echo $version | cut -d '.' -f 2)
-        patch=$(echo $version | cut -d '.' -f 3)
-        
-        minor=$((minor + 1))
-        
-        new_version="$major.$minor.$patch"
-        
-        sed -i "s/<Version>.*<\/Version>/<Version>$new_version<\/Version>/" BMW.Portal.Api/BMW.Portal.Api.csproj
-      
-    - name: Push incremented version
-      run: |
-        git config --global user.name 'github-actions'
-        git config --global user.email 'github-actions@noreply.github.com'
-        git commit -am "Increment minor version"
-        git push
+        git push origin ${{ steps.extract_branch.outputs.branch }}
