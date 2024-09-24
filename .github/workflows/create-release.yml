@@ -27,7 +27,7 @@ jobs:
       with:
         tag_name: v${{ steps.extract-version.outputs.version }}
         release_name: Release ${{ steps.extract-version.outputs.version }}
-  
+
     - name: Increment patch version
       id: increment-patch-version
       run: |
@@ -41,14 +41,23 @@ jobs:
         new_version="$major.$minor.$patch"
         
         sed -i "s/<Version>.*<\/Version>/<Version>$new_version<\/Version>/" BMW.Portal.Api/BMW.Portal.Api.csproj
-
+          
     - name: Extract branch name
       run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
       id: extract_branch     
-
+  
     - name: Push incremented patch version
       run: |
         git config --global user.name 'github-actions'
         git config --global user.email 'github-actions@noreply.github.com'
         git commit -am "Increment patch version"
         git push origin ${{ steps.extract_branch.outputs.branch }}
+  
+    - name: Checkout tag
+      run: |
+        git checkout tags/v${{ steps.extract-version.outputs.version }}
+
+    - name: Build, tag, and push image to Amazon ECR
+      id: build-image
+      run: |
+        git log

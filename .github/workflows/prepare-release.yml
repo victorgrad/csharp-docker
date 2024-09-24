@@ -28,9 +28,40 @@ jobs:
         tag_name: v${{ steps.extract-version.outputs.version }}
         release_name: Release ${{ steps.extract-version.outputs.version }}
 
+    - name: Increment minor version
+      id: increment-version
+      run: |
+        version=${{ steps.extract-version.outputs.version }}
+        major=$(echo $version | cut -d '.' -f 1)
+        minor=$(echo $version | cut -d '.' -f 2)
+        patch=$(echo $version | cut -d '.' -f 3)
+        
+        minor=$((minor + 1))
+        
+        new_version="$major.$minor.$patch"
+        
+        sed -i "s/<Version>.*<\/Version>/<Version>$new_version<\/Version>/" BMW.Portal.Api/BMW.Portal.Api.csproj
+      
+    - name: Push incremented version
+      run: |
+        git config --global user.name 'github-actions'
+        git config --global user.email 'github-actions@noreply.github.com'
+        git commit -am "Increment minor version"
+        git push
+
+    - name: Checkout tag
+      run: |
+        git checkout tags/v${{ steps.extract-version.outputs.version }}
+
     - name: Create release branch
       run: |
         git checkout -b RELEASE_${{ steps.extract-version.outputs.version }}
+  
+    - name: Build, tag, and push image to Amazon ECR
+      id: build-image
+      run: |
+        git log
+        sleep 20
 
     - name: Increment patch version
       id: increment-patch-version
@@ -52,25 +83,3 @@ jobs:
         git config --global user.email 'github-actions@noreply.github.com'
         git commit -am "Increment patch version"
         git push origin RELEASE_${{ steps.extract-version.outputs.version }}
-        git checkout master
-
-    - name: Increment minor version
-      id: increment-version
-      run: |
-        version=${{ steps.extract-version.outputs.version }}
-        major=$(echo $version | cut -d '.' -f 1)
-        minor=$(echo $version | cut -d '.' -f 2)
-        patch=$(echo $version | cut -d '.' -f 3)
-        
-        minor=$((minor + 1))
-        
-        new_version="$major.$minor.$patch"
-        
-        sed -i "s/<Version>.*<\/Version>/<Version>$new_version<\/Version>/" BMW.Portal.Api/BMW.Portal.Api.csproj
-      
-    - name: Push incremented version
-      run: |
-        git config --global user.name 'github-actions'
-        git config --global user.email 'github-actions@noreply.github.com'
-        git commit -am "Increment minor version"
-        git push
