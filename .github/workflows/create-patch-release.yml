@@ -13,10 +13,10 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
 
-    - name: Extract version from package.json
+    - name: Extract version from .csproj
       id: extract-version
       run: |
-        VERSION=$(jq -r '.version' package.json)
+        VERSION=$(cat BMW.Portal.Api/BMW.Portal.Api.csproj | grep '<Version>' | sed -E 's/.*<Version>(.*)<\/Version>.*/\1/')
         echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
     - name: Create Release
@@ -40,7 +40,7 @@ jobs:
         
         new_version="$major.$minor.$patch"
         
-        jq --arg new_version "$new_version" '.version = $new_version' package.json > package.json.tmp && mv package.json.tmp package.json
+        sed -i "s/<Version>.*<\/Version>/<Version>$new_version<\/Version>/" BMW.Portal.Api/BMW.Portal.Api.csproj
           
     - name: Extract branch name
       run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
@@ -52,3 +52,13 @@ jobs:
         git config --global user.email 'github-actions@noreply.github.com'
         git commit -am "Increment patch version"
         git push origin ${{ steps.extract_branch.outputs.branch }}
+  
+    - name: Checkout tag
+      run: |
+        git fetch
+        git checkout tags/v${{ steps.extract-version.outputs.version }}
+
+    - name: Build, tag, and push image to Amazon ECR
+      id: build-image
+      run: |
+        sleep 30
