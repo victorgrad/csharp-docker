@@ -1,7 +1,7 @@
 {
   "name": "BMX-portal-frontend",
   "private": true,
-  "version": "3.0.0",
+  "version": "3.0.1",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -11,10 +11,6 @@
     "lint": "eslint 'src/**/*.{ts,tsx}'",
     "preview": "vite preview"
   },
-  "dependencies": {
-    
-  },
-  "devDependencies": {
-    
-  }
+  "dependencies": {},
+  "devDependencies": {}
 }
