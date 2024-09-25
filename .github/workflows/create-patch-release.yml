@@ -1,11 +1,11 @@
-name: Create release on release branch
+name: Create patch release
 
 on:
   workflow_dispatch:
 
 jobs:
   create-release:
-    name: Create release
+    name: Create patch release
     if: startsWith(github.ref, 'refs/heads/RELEASE_')
     runs-on: ubuntu-latest
 
@@ -13,10 +13,10 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
 
-    - name: Extract version from .csproj
+    - name: Extract version from package.json
       id: extract-version
       run: |
-        VERSION=$(cat BMW.Portal.Api/BMW.Portal.Api.csproj | grep '<Version>' | sed -E 's/.*<Version>(.*)<\/Version>.*/\1/')
+        VERSION=$(jq -r '.version' package.json)
         echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
     - name: Create Release
@@ -40,7 +40,7 @@ jobs:
         
         new_version="$major.$minor.$patch"
         
-        sed -i "s/<Version>.*<\/Version>/<Version>$new_version<\/Version>/" BMW.Portal.Api/BMW.Portal.Api.csproj
+        jq --arg new_version "$new_version" '.version = $new_version' package.json > package.json.tmp && mv package.json.tmp package.json
           
     - name: Extract branch name
       run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
@@ -52,13 +52,3 @@ jobs:
         git config --global user.email 'github-actions@noreply.github.com'
         git commit -am "Increment patch version"
         git push origin ${{ steps.extract_branch.outputs.branch }}
-  
-    - name: Checkout tag
-      run: |
-        git fetch
-        git checkout tags/v${{ steps.extract-version.outputs.version }}
-
-    - name: Build, tag, and push image to Amazon ECR
-      id: build-image
-      run: |
-        git log
