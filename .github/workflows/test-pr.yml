@@ -1,9 +1,8 @@
 name: TESTING
 
 on:
-  pull_request:
+  push:
     branches: [ master ]
-    types: [ closed ]
   workflow_dispatch:
     inputs:
       environment:
@@ -18,9 +17,9 @@ jobs:
   deploy:
     name: Deploy
     runs-on: ubuntu-latest
-    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.merged == true
+#    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.merged == true
     env: 
-      VARIABLE: ${{ github.event_name == 'pull_request' && 'staging' || inputs.environment }}
+      VARIABLE: ${{ github.event_name == 'push' && 'staging' || inputs.environment }}
 
     steps:
     - name: Echo
