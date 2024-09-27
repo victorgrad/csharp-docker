@@ -18,10 +18,12 @@ jobs:
   deploy:
     name: Deploy
     runs-on: ubuntu-latest
-    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.merged == true
+#    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.merged == true
     env: 
       VARIABLE: ${{ github.event_name == 'pull_request' && 'staging' || inputs.environment }}
 
     steps:
     - name: Echo
-      run: echo "It is running and $VARIABLE"
+      run: |
+        echo "It is running and $VARIABLE"
+        echo ${{ github.event_name }}
