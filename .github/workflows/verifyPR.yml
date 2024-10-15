@@ -46,7 +46,7 @@ jobs:
             echo "PR title is valid!"
           else
             # Check commit message format if there is only 1 commit
-            COMMIT_MESSAGE=$(git log -1 --pretty=%B)
+            COMMIT_MESSAGE=$(git log -1 --pretty=%B HEAD^1)
             echo "Commit Message: $COMMIT_MESSAGE"
             if [[ ! "$COMMIT_MESSAGE" =~ $COMMIT_PATTERN ]]; then
               echo "Error: Invalid commit message format. Must be '[PBX-anynumberhere] Some title here'."
