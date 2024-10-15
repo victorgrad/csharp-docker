@@ -1,0 +1,39 @@
+name: "PR Title and Branch Name Validator"
+
+on:
+  pull_request:
+
+jobs:
+  check-pr:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Validate PR title and branch name
+        run: |
+          # Extract PR title and branch name from the environment
+          PR_TITLE="${{ github.event.pull_request.title }}"
+          BRANCH_NAME="${{ github.event.pull_request.head.ref }}"
+
+          # Define the regex patterns
+          TITLE_PATTERN="^\[PBX-[0-9]+\].*"
+          BRANCH_PATTERN="^(fix|feature)/PBX-[0-9]+"
+
+          echo "PR Title: $PR_TITLE"
+          echo "Branch Name: $BRANCH_NAME"
+
+          # Validate PR title
+          if [[ ! "$PR_TITLE" =~ $TITLE_PATTERN ]]; then
+            echo "Error: Invalid PR title format. Must be '[PBX-anynumberhere] Some title here'."
+            exit 1
+          fi
+
+          # Validate branch name
+          if [[ ! "$BRANCH_NAME" =~ $BRANCH_PATTERN ]]; then
+            echo "Error: Invalid branch name format. Must be 'fix/PBX-anynumberhere' or 'feature/PBX-anynumberhere'."
+            exit 1
+          fi
+
+          echo "PR title and branch name are valid!"
