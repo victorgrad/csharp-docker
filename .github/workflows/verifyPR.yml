@@ -14,27 +14,40 @@ jobs:
 
       - name: Validate PR title and branch name
         run: |
-          # Extract PR title and branch name from the environment
           PR_TITLE="${{ github.event.pull_request.title }}"
           BRANCH_NAME="${{ github.event.pull_request.head.ref }}"
+          COMMIT_COUNT=$(git rev-list --count origin/${{ github.event.pull_request.base.ref }}..${{ github.event.pull_request.head.ref }})
 
-          # Define the regex patterns
+          # Define regex patterns
           TITLE_PATTERN="^\[PBX-[0-9]+\].*"
+          COMMIT_PATTERN="^\[PBX-[0-9]+\].*"
           BRANCH_PATTERN="^(fix|feature)/PBX-[0-9]+"
 
           echo "PR Title: $PR_TITLE"
           echo "Branch Name: $BRANCH_NAME"
+          echo "Commit Count: $COMMIT_COUNT"
 
-          # Validate PR title
-          if [[ ! "$PR_TITLE" =~ $TITLE_PATTERN ]]; then
-            echo "Error: Invalid PR title format. Must be '[PBX-anynumberhere] Some title here'."
-            exit 1
-          fi
-
-          # Validate branch name
+          # Check branch name first
           if [[ ! "$BRANCH_NAME" =~ $BRANCH_PATTERN ]]; then
             echo "Error: Invalid branch name format. Must be 'fix/PBX-anynumberhere' or 'feature/PBX-anynumberhere'."
             exit 1
           fi
 
-          echo "PR title and branch name are valid!"
+          # Validate based on commit count
+          if [ "$COMMIT_COUNT" -gt 1 ]; then
+            # Check PR title format if more than 1 commit
+            if [[ ! "$PR_TITLE" =~ $TITLE_PATTERN ]]; then
+              echo "Error: Invalid PR title format. Must be '[PBX-anynumberhere] Some title here'."
+              exit 1
+            fi
+            echo "PR title is valid!"
+          else
+            # Check commit message format if there is only 1 commit
+            COMMIT_MESSAGE=$(git log -1 --pretty=%B)
+            echo "Commit Message: $COMMIT_MESSAGE"
+            if [[ ! "$COMMIT_MESSAGE" =~ $COMMIT_PATTERN ]]; then
+              echo "Error: Invalid commit message format. Must be '[PBX-anynumberhere] Some title here'."
+              exit 1
+            fi
+            echo "Commit message is valid!"
+          fi
