@@ -20,6 +20,7 @@ jobs:
 
       - name: Validate PR title and branch name
         run: |
+          git branch -a
           PR_TITLE="${{ github.event.pull_request.title }}"
           BRANCH_NAME="${{ github.event.pull_request.head.ref }}"
           COMMIT_COUNT=$(git rev-list --count origin/${{ github.event.pull_request.base.ref }}..${{ github.event.pull_request.head.ref }})
