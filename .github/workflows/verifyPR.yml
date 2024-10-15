@@ -18,7 +18,8 @@ jobs:
         run: |
           PR_TITLE="${{ github.event.pull_request.title }}"
           BRANCH_NAME="${{ github.event.pull_request.head.ref }}"
-          COMMIT_COUNT=$(git rev-list --count remotes/origin/${{ github.event.pull_request.base.ref }}..HEAD~1)
+          COMMIT_COUNT=$(git rev-list --count remotes/origin/${{ github.event.pull_request.base.ref }}..HEAD)
+          COMMIT_COUNT=$((COMMIT_COUNT - 1))
 
           # Define regex patterns
           TITLE_PATTERN="^\[PBX-[0-9]+\].*"
